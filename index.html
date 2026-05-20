@@ -57,13 +57,14 @@
         /* Tool Sections */
         .tool-section { display: none; }
         .tool-section.active { display: block; }
-        h3 { margin-top: 0; color: var(--text); font-size: 18px; }
+        h3 { margin-top: 0; color: var(--text); font-size: 18px; margin-bottom: 5px; }
+        .tool-desc { font-size: 13px; color: #586069; margin-top: 0; margin-bottom: 15px; }
         
         /* Inputs & Buttons */
-        textarea, input[type="text"], input[type="number"], select { 
+        textarea, input[type="text"], input[type="number"], input[type="datetime-local"], select { 
             width: 100%; 
             padding: 12px; 
-            margin: 10px 0 15px 0; 
+            margin: 0 0 15px 0; 
             border: 1px solid var(--border); 
             border-radius: 6px; 
             box-sizing: border-box; 
@@ -110,6 +111,10 @@
             border-radius: 6px;
         }
         .checkbox-group label { cursor: pointer; font-weight: 500;}
+        
+        .input-row { display: flex; gap: 15px; align-items: center; margin-bottom: 15px;}
+        .input-row > * { margin-bottom: 0 !important; }
+        .or-divider { font-weight: bold; color: #586069; font-size: 12px; }
     </style>
 </head>
 <body>
@@ -120,6 +125,7 @@
     <div class="tabs" id="tabNav">
         <button onclick="show('hashing', this)" class="active">Hash / Base64</button>
         <button onclick="show('url', this)">URL Tools</button>
+        <button onclick="show('subnet', this)">Subnet Calc</button>
         <button onclick="show('time', this)">Time Utilities</button>
         <button onclick="show('ua', this)">UA Parser</button>
         <button onclick="show('pass', this)">Key Generator</button>
@@ -127,7 +133,7 @@
 
     <div id="hashing" class="tool-section active">
         <h3>Hash & Base64 Utility</h3>
-        <p style="font-size: 13px; color: #586069; margin-top: 0;">Perform local cryptographic hashing and Base64 encoding/decoding.</p>
+        <p class="tool-desc">Perform local cryptographic hashing and Base64 encoding/decoding.</p>
         <textarea id="io" placeholder="Enter string here..."></textarea>
         <button class="action-btn" onclick="doHash('base64e')">Base64 Encode</button>
         <button class="action-btn" onclick="doHash('base64d')">Base64 Decode</button>
@@ -137,17 +143,31 @@
 
     <div id="url" class="tool-section">
         <h3>URL Encoder / Decoder</h3>
-        <p style="font-size: 13px; color: #586069; margin-top: 0;">Safely encode or decode URL parameters and malicious links.</p>
+        <p class="tool-desc">Safely encode or decode URL parameters and malicious links.</p>
         <textarea id="ioU" placeholder="Paste URL here..."></textarea>
         <button class="action-btn" onclick="doUrl('enc')">Encode URL</button>
         <button class="action-btn" onclick="doUrl('dec')">Decode URL</button>
         <pre id="outU">Waiting for input...</pre>
     </div>
 
+    <div id="subnet" class="tool-section">
+        <h3>Subnet / CIDR Calculator</h3>
+        <p class="tool-desc">Calculate network boundaries, broadcast addresses, and usable host ranges.</p>
+        <input type="text" id="ipCidrInput" placeholder="Enter IP/CIDR (e.g., 192.168.1.100/24)">
+        <button class="action-btn" onclick="calcSubnet()">Calculate Subnet</button>
+        <pre id="outSubnet">Waiting for input...</pre>
+    </div>
+
     <div id="time" class="tool-section">
         <h3>Timezone & Timestamp Converter</h3>
-        <p style="font-size: 13px; color: #586069; margin-top: 0;">Convert Unix Epoch timestamps to human-readable formats across timezones.</p>
-        <input type="text" id="tsInput" placeholder="Enter Unix Timestamp (e.g., 1716240000) or leave blank for current time">
+        <p class="tool-desc">Convert Unix Epoch timestamps or manually selected dates across timezones.</p>
+        
+        <div class="input-row">
+            <input type="text" id="tsInput" placeholder="Unix Epoch (e.g., 1716240000)">
+            <span class="or-divider">OR</span>
+            <input type="datetime-local" id="dtInput" title="Select Date and Time">
+        </div>
+        
         <select id="tz">
             <option value="UTC">UTC (Coordinated Universal Time)</option>
             <option value="America/New_York">EST/EDT (New York)</option>
@@ -156,13 +176,15 @@
             <option value="Asia/Tokyo">JST (Tokyo)</option>
             <option value="Australia/Sydney">AEST/AEDT (Sydney)</option>
         </select>
-        <button class="action-btn" onclick="convertTime()">Convert Timestamp</button>
+        
+        <button class="action-btn" onclick="convertTime()">Convert Time</button>
+        <button class="action-btn" style="background-color: #6a737d;" onclick="clearTimeInputs()">Clear Inputs</button>
         <pre id="outT">Waiting for input...</pre>
     </div>
 
     <div id="ua" class="tool-section">
         <h3>User Agent Parser</h3>
-        <p style="font-size: 13px; color: #586069; margin-top: 0;">Extract basic browser and OS information from a UA string.</p>
+        <p class="tool-desc">Extract basic browser and OS information from a UA string.</p>
         <textarea id="ioUA" placeholder="Paste User-Agent string here (or leave blank to parse your own browser)..."></textarea>
         <button class="action-btn" onclick="parseUA()">Parse UA String</button>
         <pre id="outUA">Waiting for input...</pre>
@@ -170,9 +192,9 @@
 
     <div id="pass" class="tool-section">
         <h3>Secure Key Generator</h3>
-        <p style="font-size: 13px; color: #586069; margin-top: 0;">Generate cryptographically secure randomized strings.</p>
+        <p class="tool-desc">Generate cryptographically secure randomized strings.</p>
         
-        <label style="font-weight: 600; font-size: 14px;">Length:</label>
+        <label style="font-weight: 600; font-size: 14px; display:block; margin-bottom: 5px;">Length:</label>
         <input type="number" id="pLength" value="24" min="1" max="128">
         
         <div class="checkbox-group">
@@ -189,12 +211,8 @@
 <script>
     // Tab Navigation Logic
     function show(id, btnElement) {
-        // Hide all sections
         document.querySelectorAll('.tool-section').forEach(s => s.classList.remove('active'));
-        // Show target section
         document.getElementById(id).classList.add('active');
-        
-        // Update button styles
         document.querySelectorAll('#tabNav button').forEach(b => b.classList.remove('active'));
         btnElement.classList.add('active');
     }
@@ -233,33 +251,117 @@
         }
     }
 
-    // 3. Timezone Logic
+    // 3. Subnet / CIDR Calculator Logic
+    function calcSubnet() {
+        const input = document.getElementById('ipCidrInput').value.trim();
+        const out = document.getElementById('outSubnet');
+        if (!input) { out.innerText = "Please enter an IP and CIDR."; return; }
+        
+        const parts = input.split('/');
+        if (parts.length !== 2) { out.innerText = "Error: Format must be IP/CIDR (e.g., 192.168.1.1/24)"; return; }
+        
+        const ip = parts[0];
+        const cidr = parseInt(parts[1]);
+        
+        if (isNaN(cidr) || cidr < 0 || cidr > 32) { out.innerText = "Error: CIDR must be between 0 and 32"; return; }
+        
+        const ipParts = ip.split('.').map(Number);
+        if (ipParts.length !== 4 || ipParts.some(p => p < 0 || p > 255 || isNaN(p))) { 
+            out.innerText = "Error: Invalid IPv4 address format."; 
+            return; 
+        }
+        
+        const ipBin = ipParts.map(p => p.toString(2).padStart(8, '0')).join('');
+        const netBin = ipBin.substring(0, cidr).padEnd(32, '0');
+        const bcastBin = ipBin.substring(0, cidr).padEnd(32, '1');
+        const maskBin = "".padStart(cidr, '1').padEnd(32, '0');
+        
+        const binToIp = (bin) => [
+            parseInt(bin.substring(0,8), 2),
+            parseInt(bin.substring(8,16), 2),
+            parseInt(bin.substring(16,24), 2),
+            parseInt(bin.substring(24,32), 2)
+        ].join('.');
+        
+        const netIp = binToIp(netBin);
+        const bcastIp = binToIp(bcastBin);
+        const maskIp = binToIp(maskBin);
+        const wildcardIp = binToIp(maskBin.split('').map(b => b === '1' ? '0' : '1').join(''));
+        
+        const totalHosts = Math.pow(2, 32 - cidr);
+        const usableHosts = (cidr >= 31) ? 0 : totalHosts - 2;
+        
+        const minHostBin = (parseInt(netBin, 2) + 1).toString(2).padStart(32, '0');
+        const maxHostBin = (parseInt(bcastBin, 2) - 1).toString(2).padStart(32, '0');
+        
+        const hostRange = usableHosts > 0 ? `${binToIp(minHostBin)} - ${binToIp(maxHostBin)}` : "N/A";
+        
+        const result = {
+            "IP Address": ip,
+            "Network Address": netIp,
+            "Broadcast Address": bcastIp,
+            "Usable Host Range": hostRange,
+            "Subnet Mask": maskIp,
+            "Wildcard Mask": wildcardIp,
+            "Total Hosts": totalHosts.toLocaleString(),
+            "Usable Hosts": usableHosts.toLocaleString()
+        };
+        
+        out.innerText = JSON.stringify(result, null, 4);
+    }
+
+    // 4. Timezone Logic (UPDATED)
+    function clearTimeInputs() {
+        document.getElementById('tsInput').value = '';
+        document.getElementById('dtInput').value = '';
+        document.getElementById('outT').innerText = "Waiting for input...";
+    }
+
     function convertTime() {
-        const val = document.getElementById('tsInput').value.trim();
+        const tsVal = document.getElementById('tsInput').value.trim();
+        const dtVal = document.getElementById('dtInput').value;
         const tz = document.getElementById('tz').value;
         const out = document.getElementById('outT');
         
         let dateObj;
         
-        if (!val) {
-            dateObj = new Date(); // Use current time if blank
-        } else {
-            let timestamp = parseInt(val);
-            // Auto-detect if user entered seconds instead of milliseconds
-            if (val.length <= 10) timestamp *= 1000; 
+        if (dtVal) {
+            // User manually selected a date and time from the calendar picker
+            dateObj = new Date(dtVal);
+        } else if (tsVal) {
+            // User entered a unix timestamp
+            let timestamp = parseInt(tsVal);
+            if (tsVal.length <= 10) timestamp *= 1000; 
             dateObj = new Date(timestamp);
+        } else {
+            // Nothing entered; default to right now
+            dateObj = new Date();
         }
 
         if (isNaN(dateObj.getTime())) {
-            out.innerText = "Error: Invalid timestamp format.";
+            out.innerText = "Error: Invalid time format entered.";
             return;
         }
 
-        out.innerText = "Local Standard: " + dateObj.toString() + 
-                        "\n\nConverted Time: " + dateObj.toLocaleString("en-US", {timeZone: tz, timeZoneName: "short"});
+        // Generate the Epoch seconds for reference
+        const epochSeconds = Math.floor(dateObj.getTime() / 1000);
+
+        out.innerText = "Unix Epoch: " + epochSeconds + 
+                        "\nLocal Standard: " + dateObj.toString() + 
+                        "\n\nConverted Target Time:\n" + dateObj.toLocaleString("en-US", {
+                            timeZone: tz, 
+                            timeZoneName: "short",
+                            weekday: "long",
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            second: "2-digit"
+                        });
     }
 
-    // 4. UA Parser Logic
+    // 5. UA Parser Logic
     function parseUA() {
         const ua = document.getElementById('ioUA').value || navigator.userAgent;
         const out = document.getElementById('outUA');
@@ -270,13 +372,11 @@
             "Operating System": "Unknown"
         };
 
-        // Basic Browser Detection
         if (/Firefox/i.test(ua)) result.Browser = 'Mozilla Firefox';
         else if (/Edg/i.test(ua)) result.Browser = 'Microsoft Edge';
         else if (/Chrome/i.test(ua)) result.Browser = 'Google Chrome';
         else if (/Safari/i.test(ua)) result.Browser = 'Apple Safari';
         
-        // Basic OS Detection
         if (/Windows/i.test(ua)) result["Operating System"] = 'Windows';
         else if (/Mac OS/i.test(ua)) result["Operating System"] = 'MacOS';
         else if (/Linux/i.test(ua)) result["Operating System"] = 'Linux';
@@ -286,7 +386,7 @@
         out.innerText = JSON.stringify(result, null, 4);
     }
 
-    // 5. Crypto-Secure Password Generator Logic
+    // 6. Crypto-Secure Password Generator Logic
     function genPass() {
         const len = parseInt(document.getElementById('pLength').value);
         const out = document.getElementById('outP');
@@ -307,7 +407,6 @@
             return;
         }
 
-        // Use cryptographically secure randomization
         const randomValues = new Uint32Array(len);
         window.crypto.getRandomValues(randomValues);
         
