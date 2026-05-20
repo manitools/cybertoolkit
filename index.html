@@ -1,1 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyber Toolkit | All-in-One</title>
+    <style>
+        :root { 
+            --primary: #0366d6; 
+            --primary-hover: #005cc5;
+            --bg: #f6f8fa; 
+            --border: #e1e4e8; 
+            --text: #24292e;
+        }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; 
+            background: var(--bg); 
+            color: var(--text);
+            padding: 20px; 
+            margin: 0;
+        }
+        .container { 
+            max-width: 900px; 
+            margin: 0 auto; 
+            background: white; 
+            padding: 30px; 
+            border-radius: 8px; 
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1); 
+        }
+        h1 { margin-top: 0; font-size: 24px; border-bottom: 2px solid var(--border); padding-bottom: 10px;}
+        
+        /* Tab Navigation */
+        .tabs { 
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 8px; 
+            margin-bottom: 25px; 
+        }
+        .tabs button { 
+            padding: 10px 16px; 
+            cursor: pointer; 
+            border: 1px solid var(--border); 
+            background: #fff; 
+            border-radius: 6px; 
+            font-size: 14px; 
+            font-weight: 600;
+            color: var(--text);
+            transition: all 0.2s;
+        }
+        .tabs button:hover { background: #f1f8ff; }
+        .tabs button.active { 
+            background: var(--primary); 
+            color: white; 
+            border-color: var(--primary); 
+        }
+        
+        /* Tool Sections */
+        .tool-section { display: none; }
+        .tool-section.active { display: block; }
+        h3 { margin-top: 0; color: var(--text); font-size: 18px; }
+        
+        /* Inputs & Buttons */
+        textarea, input[type="text"], input[type="number"], select { 
+            width: 100%; 
+            padding: 12px; 
+            margin: 10px 0 15px 0; 
+            border: 1px solid var(--border); 
+            border-radius: 6px; 
+            box-sizing: border-box; 
+            font-family: monospace;
+            font-size: 14px;
+        }
+        textarea { height: 120px; resize: vertical; }
+        
+        .action-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        .action-btn:hover { background-color: var(--primary-hover); }
+        
+        /* Output Box */
+        pre { 
+            background: #f4f4f4; 
+            padding: 15px; 
+            border-radius: 6px; 
+            border: 1px solid var(--border);
+            word-break: break-all; 
+            white-space: pre-wrap; 
+            font-family: monospace; 
+            min-height: 20px;
+            margin-top: 20px;
+        }
 
+        .checkbox-group { 
+            display: flex; 
+            flex-wrap: wrap;
+            gap: 15px; 
+            margin-bottom: 20px; 
+            padding: 15px;
+            background: #f1f8ff;
+            border: 1px solid #c8e1ff;
+            border-radius: 6px;
+        }
+        .checkbox-group label { cursor: pointer; font-weight: 500;}
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Cyber Toolkit 🛠️</h1>
+    
+    <div class="tabs" id="tabNav">
+        <button onclick="show('hashing', this)" class="active">Hash / Base64</button>
+        <button onclick="show('url', this)">URL Tools</button>
+        <button onclick="show('time', this)">Time Utilities</button>
+        <button onclick="show('ua', this)">UA Parser</button>
+        <button onclick="show('pass', this)">Key Generator</button>
+    </div>
+
+    <div id="hashing" class="tool-section active">
+        <h3>Hash & Base64 Utility</h3>
+        <p style="font-size: 13px; color: #586069; margin-top: 0;">Perform local cryptographic hashing and Base64 encoding/decoding.</p>
+        <textarea id="io" placeholder="Enter string here..."></textarea>
+        <button class="action-btn" onclick="doHash('base64e')">Base64 Encode</button>
+        <button class="action-btn" onclick="doHash('base64d')">Base64 Decode</button>
+        <button class="action-btn" onclick="doHash('sha256')">SHA-256 Hash</button>
+        <pre id="outH">Waiting for input...</pre>
+    </div>
+
+    <div id="url" class="tool-section">
+        <h3>URL Encoder / Decoder</h3>
+        <p style="font-size: 13px; color: #586069; margin-top: 0;">Safely encode or decode URL parameters and malicious links.</p>
+        <textarea id="ioU" placeholder="Paste URL here..."></textarea>
+        <button class="action-btn" onclick="doUrl('enc')">Encode URL</button>
+        <button class="action-btn" onclick="doUrl('dec')">Decode URL</button>
+        <pre id="outU">Waiting for input...</pre>
+    </div>
+
+    <div id="time" class="tool-section">
+        <h3>Timezone & Timestamp Converter</h3>
+        <p style="font-size: 13px; color: #586069; margin-top: 0;">Convert Unix Epoch timestamps to human-readable formats across timezones.</p>
+        <input type="text" id="tsInput" placeholder="Enter Unix Timestamp (e.g., 1716240000) or leave blank for current time">
+        <select id="tz">
+            <option value="UTC">UTC (Coordinated Universal Time)</option>
+            <option value="America/New_York">EST/EDT (New York)</option>
+            <option value="Europe/London">GMT/BST (London)</option>
+            <option value="Asia/Kolkata">IST (India Standard Time)</option>
+            <option value="Asia/Tokyo">JST (Tokyo)</option>
+            <option value="Australia/Sydney">AEST/AEDT (Sydney)</option>
+        </select>
+        <button class="action-btn" onclick="convertTime()">Convert Timestamp</button>
+        <pre id="outT">Waiting for input...</pre>
+    </div>
+
+    <div id="ua" class="tool-section">
+        <h3>User Agent Parser</h3>
+        <p style="font-size: 13px; color: #586069; margin-top: 0;">Extract basic browser and OS information from a UA string.</p>
+        <textarea id="ioUA" placeholder="Paste User-Agent string here (or leave blank to parse your own browser)..."></textarea>
+        <button class="action-btn" onclick="parseUA()">Parse UA String</button>
+        <pre id="outUA">Waiting for input...</pre>
+    </div>
+
+    <div id="pass" class="tool-section">
+        <h3>Secure Key Generator</h3>
+        <p style="font-size: 13px; color: #586069; margin-top: 0;">Generate cryptographically secure randomized strings.</p>
+        
+        <label style="font-weight: 600; font-size: 14px;">Length:</label>
+        <input type="number" id="pLength" value="24" min="1" max="128">
+        
+        <div class="checkbox-group">
+            <label><input type="checkbox" id="pUpper" checked> Uppercase (A-Z)</label>
+            <label><input type="checkbox" id="pLower" checked> Lowercase (a-z)</label>
+            <label><input type="checkbox" id="pNum" checked> Numbers (0-9)</label>
+            <label><input type="checkbox" id="pSym" checked> Symbols (!@#$)</label>
+        </div>
+        <button class="action-btn" onclick="genPass()">Generate Key</button>
+        <pre id="outP">Waiting for input...</pre>
+    </div>
+</div>
+
+<script>
+    // Tab Navigation Logic
+    function show(id, btnElement) {
+        // Hide all sections
+        document.querySelectorAll('.tool-section').forEach(s => s.classList.remove('active'));
+        // Show target section
+        document.getElementById(id).classList.add('active');
+        
+        // Update button styles
+        document.querySelectorAll('#tabNav button').forEach(b => b.classList.remove('active'));
+        btnElement.classList.add('active');
+    }
+
+    // 1. Hash & Base64 Logic
+    async function doHash(type) {
+        const val = document.getElementById('io').value;
+        const out = document.getElementById('outH');
+        if (!val) { out.innerText = "Please enter text to process."; return; }
+
+        try {
+            if (type === 'base64e') {
+                out.innerText = btoa(val);
+            } else if (type === 'base64d') {
+                out.innerText = atob(val);
+            } else if (type === 'sha256') {
+                const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(val));
+                out.innerText = Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+            }
+        } catch (error) {
+            out.innerText = "Error: Invalid input data for this operation.";
+        }
+    }
+
+    // 2. URL Encoder/Decoder Logic
+    function doUrl(type) {
+        const val = document.getElementById('ioU').value;
+        const out = document.getElementById('outU');
+        if (!val) { out.innerText = "Please enter a URL."; return; }
+
+        try {
+            if(type === 'enc') out.innerText = encodeURIComponent(val);
+            if(type === 'dec') out.innerText = decodeURIComponent(val);
+        } catch (error) {
+            out.innerText = "Error: Malformed URI encountered.";
+        }
+    }
+
+    // 3. Timezone Logic
+    function convertTime() {
+        const val = document.getElementById('tsInput').value.trim();
+        const tz = document.getElementById('tz').value;
+        const out = document.getElementById('outT');
+        
+        let dateObj;
+        
+        if (!val) {
+            dateObj = new Date(); // Use current time if blank
+        } else {
+            let timestamp = parseInt(val);
+            // Auto-detect if user entered seconds instead of milliseconds
+            if (val.length <= 10) timestamp *= 1000; 
+            dateObj = new Date(timestamp);
+        }
+
+        if (isNaN(dateObj.getTime())) {
+            out.innerText = "Error: Invalid timestamp format.";
+            return;
+        }
+
+        out.innerText = "Local Standard: " + dateObj.toString() + 
+                        "\n\nConverted Time: " + dateObj.toLocaleString("en-US", {timeZone: tz, timeZoneName: "short"});
+    }
+
+    // 4. UA Parser Logic
+    function parseUA() {
+        const ua = document.getElementById('ioUA').value || navigator.userAgent;
+        const out = document.getElementById('outUA');
+        
+        const result = {
+            "Original String": ua,
+            "Browser": "Unknown",
+            "Operating System": "Unknown"
+        };
+
+        // Basic Browser Detection
+        if (/Firefox/i.test(ua)) result.Browser = 'Mozilla Firefox';
+        else if (/Edg/i.test(ua)) result.Browser = 'Microsoft Edge';
+        else if (/Chrome/i.test(ua)) result.Browser = 'Google Chrome';
+        else if (/Safari/i.test(ua)) result.Browser = 'Apple Safari';
+        
+        // Basic OS Detection
+        if (/Windows/i.test(ua)) result["Operating System"] = 'Windows';
+        else if (/Mac OS/i.test(ua)) result["Operating System"] = 'MacOS';
+        else if (/Linux/i.test(ua)) result["Operating System"] = 'Linux';
+        else if (/Android/i.test(ua)) result["Operating System"] = 'Android';
+        else if (/iPhone|iPad/i.test(ua)) result["Operating System"] = 'iOS';
+
+        out.innerText = JSON.stringify(result, null, 4);
+    }
+
+    // 5. Crypto-Secure Password Generator Logic
+    function genPass() {
+        const len = parseInt(document.getElementById('pLength').value);
+        const out = document.getElementById('outP');
+        
+        if (!len || len < 1 || len > 128) {
+            out.innerText = "Please enter a valid length between 1 and 128.";
+            return;
+        }
+
+        let chars = "";
+        if (document.getElementById('pUpper').checked) chars += "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        if (document.getElementById('pLower').checked) chars += "abcdefghijklmnopqrstuvwxyz";
+        if (document.getElementById('pNum').checked) chars += "0123456789";
+        if (document.getElementById('pSym').checked) chars += "!@#$%^&*()_+~`|}{[]:;?><,./-=";
+
+        if (chars.length === 0) {
+            out.innerText = "Error: Please select at least one character type.";
+            return;
+        }
+
+        // Use cryptographically secure randomization
+        const randomValues = new Uint32Array(len);
+        window.crypto.getRandomValues(randomValues);
+        
+        let password = "";
+        for (let i = 0; i < len; i++) {
+            password += chars[randomValues[i] % chars.length];
+        }
+        
+        out.innerText = password;
+    }
+</script>
+
+</body>
+</html>
